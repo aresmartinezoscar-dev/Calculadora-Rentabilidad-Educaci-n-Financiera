@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de inversión real neta</title>
+  <meta
+    name="description"
+    content="Calculadora comparativa de fondo indexado, depósito, SIALP y otras opciones, con inflación e impuestos."
+  />
+  <style>
+    :root{
+      --bg: #0b1020;
+      --card: rgba(255,255,255,0.08);
+      --card-strong: rgba(255,255,255,0.12);
+      --text: #eef2ff;
+      --muted: #b8c1e0;
+      --border: rgba(255,255,255,0.12);
+      --primary: #7c9cff;
+      --primary-2: #5de1c4;
+      --danger: #ff8a8a;
+      --shadow: 0 10px 30px rgba(0,0,0,0.25);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(124,156,255,0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(93,225,196,0.12), transparent 28%),
+        linear-gradient(180deg, #0b1020, #111833 48%, #0d1327);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container{
+      width:min(var(--max), calc(100% - 24px));
+      margin:0 auto;
+      padding: 20px 0 48px;
+    }
+
+    .hero{
+      padding: 18px 0 10px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(124,156,255,0.16);
+      border: 1px solid rgba(124,156,255,0.28);
+      color:#dfe8ff;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .2px;
+    }
+
+    h1{
+      margin: 14px 0 10px;
+      font-size: clamp(28px, 5vw, 46px);
+      line-height: 1.05;
+      letter-spacing: -.03em;
+    }
+
+    .subtitle{
+      margin:0;
+      color: var(--muted);
+      max-width: 820px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:16px;
+      margin-top: 22px;
+    }
+
+    @media (min-width: 980px){
+      .grid{
+        grid-template-columns: 410px 1fr;
+        align-items:start;
+      }
+    }
+
+    .panel{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .panel-header{
+      padding: 18px 18px 0;
+    }
+
+    .panel-body{
+      padding: 18px;
+    }
+
+    .panel h2{
+      margin:0 0 6px;
+      font-size: 20px;
+      letter-spacing: -.02em;
+    }
+
+    .panel p.helper{
+      margin:0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .section{
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .section:first-child{
+      margin-top:0;
+      padding-top:0;
+      border-top:none;
+    }
+
+    .section-title{
+      margin:0 0 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color:#f3f6ff;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .fields{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+    }
+
+    .field.full{
+      grid-column: 1 / -1;
+    }
+
+    label{
+      font-size: 13px;
+      color:#dce4ff;
+      font-weight: 600;
+    }
+
+    input, select, textarea{
+      width:100%;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(10,14,28,0.42);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 13px;
+      font-size: 15px;
+      outline:none;
+      transition: .2s ease;
+    }
+
+    textarea{
+      min-height: 108px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(124,156,255,0.55);
+      box-shadow: 0 0 0 4px rgba(124,156,255,0.12);
+    }
+
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .products{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .product-card{
+      border:1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .product-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom: 10px;
+    }
+
+    .product-title{
+      margin:0;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .tag{
+      font-size: 11px;
+      color:#dce4ff;
+      background: rgba(124,156,255,0.16);
+      border: 1px solid rgba(124,156,255,0.22);
+      padding: 6px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .actions{
+      position: sticky;
+      bottom: 12px;
+      display:flex;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 8px;
+      background: linear-gradient(180deg, rgba(11,16,32,0), rgba(11,16,32,0.88) 24%, rgba(11,16,32,1));
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor:pointer;
+      transition: transform .08s ease, opacity .2s ease, box-shadow .2s ease;
+    }
+
+    .btn:active{
+      transform: translateY(1px);
+    }
+
+    .btn-primary{
+      flex:1;
+      color:#08101f;
+      background: linear-gradient(135deg, var(--primary-2), var(--primary));
+      box-shadow: 0 10px 24px rgba(93,225,196,0.15);
+    }
+
+    .btn-secondary{
+      color: var(--text);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .results-wrap{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .summary{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (min-width: 720px){
+      .summary{
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .summary-card{
+      padding: 16px;
+      border-radius: 16px;
+      background: var(--card);
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .summary-card .kicker{
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .summary-card .value{
+      font-size: clamp(22px, 4vw, 30px);
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1.1;
+    }
+
+    .summary-card .sub{
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .tabs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom: 12px;
+    }
+
+    .tab-btn{
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor:pointer;
+    }
+
+    .tab-btn.active{
+      background: linear-gradient(135deg, rgba(93,225,196,0.18), rgba(124,156,255,0.22));
+      border-color: rgba(124,156,255,0.3);
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+    }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      min-width: 780px;
+    }
+
+    th, td{
+      padding: 14px 12px;
+      text-align: right;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    th:first-child, td:first-child{
+      text-align:left;
+      position: sticky;
+      left: 0;
+      background: rgba(14,20,40,0.95);
+      z-index:1;
+    }
+
+    th{
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color:#ced7fb;
+      background: rgba(10,14,28,0.95);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    tbody tr:hover td{
+      background: rgba(255,255,255,0.03);
+    }
+
+    .note{
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .danger{
+      color: #ffd0d0;
+      background: rgba(255,138,138,0.08);
+      border:1px solid rgba(255,138,138,0.16);
+    }
+
+    .small{
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer{
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <span class="badge">Calculadora de inversión real neta</span>
+      <h1>Compara rentabilidad, impuestos e inflación</h1>
+      <p class="subtitle">
+        Calcula cuánto tendrías en términos nominales y reales en un fondo indexado, depósito, SIALP y otras opciones,
+        teniendo en cuenta aportaciones periódicas, fiscalidad y pérdida de poder adquisitivo.
+      </p>
+    </section>
+
+    <div class="grid">
+      <aside class="panel">
+        <div class="panel-header">
+          <h2>Supuestos editables</h2>
+          <p class="helper">
+            Los valores vienen con una configuración razonable por defecto, pero puedes cambiar inflación, rentabilidades,
+            límite SIALP y tramos fiscales.
+          </p>
+        </div>
+        <div class="panel-body">
+          <div class="section">
+            <div class="section-title">Aportaciones</div>
+            <div class="fields">
+              <div class="field">
+                <label for="contributionMode">Periodicidad</label>
+                <select id="contributionMode">
+                  <option value="annual">Aportación anual</option>
+                  <option value="monthly">Aportación mensual</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="contributionAmount">Importe</label>
+                <input id="contributionAmount" type="number" min="0" step="0.01" value="5000" />
+              </div>
+
+              <div class="field">
+                <label for="inflation">Inflación media anual (%)</label>
+                <input id="inflation" type="number" min="0" step="0.01" value="2.5" />
+              </div>
+
+              <div class="field">
+                <label for="years">Años a mostrar</label>
+                <input id="years" type="text" value="3,5,10,15,20" />
+              </div>
+            </div>
+            <div class="hint" style="margin-top:10px;">
+              Si eliges aportación anual, el cálculo supone que aportas una vez al inicio de cada año.
+              Si eliges aportación mensual, aporta al inicio de cada mes.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Fiscalidad</div>
+            <div class="fields">
+              <div class="field full">
+                <label for="taxBrackets">Tramos base del ahorro</label>
+                <textarea id="taxBrackets">6000:19
+50000:21
+200000:23
+300000:27
+Infinity:30</textarea>
+                <div class="hint">
+                  Formato: <span class="mono">límite:tipo</span> en cada línea. Ejemplo:
+                  <span class="mono">6000:19</span> significa 19% hasta 6.000 €.
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="sialpLimit">Límite anual SIALP (€)</label>
+                <input id="sialpLimit" type="number" min="0" step="0.01" value="5000" />
+              </div>
+
+              <div class="field">
+                <label for="sialpMinYears">Años mínimos SIALP</label>
+                <input id="sialpMinYears" type="number" min="1" step="1" value="5" />
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Rentabilidades anuales</div>
+            <div class="products">
+              <div class="product-card">
+                <div class="product-head">
+                  <h3 class="product-title">Fondo indexado global</h3>
+                  <span class="tag">Tributación diferida al rescate</span>
+                </div>
+                <div class="fields">
+                  <div class="field full">
+                    <label for="rateIndex">Rentabilidad (%)</label>
+                    <input id="rateIndex" type="number" step="0.01" value="7" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="product-card">
+                <div class="product-head">
+                  <h3 class="product-title">Depósito</h3>
+                  <span class="tag">Tributación anual</span>
+                </div>
+                <div class="fields">
+                  <div class="field full">
+                    <label for="rateDeposit">Rentabilidad (%)</label>
+                    <input id="rateDeposit" type="number" step="0.01" value="2.5" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="product-card">
+                <div class="product-head">
+                  <h3 class="product-title">SIALP</h3>
+                  <span class="tag">Exento si cumple requisitos</span>
+                </div>
+                <div class="fields">
+                  <div class="field full">
+                    <label for="rateSialp">Rentabilidad (%)</label>
+                    <input id="rateSialp" type="number" step="0.01" value="2" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="product-card">
+                <div class="product-head">
+                  <h3 class="product-title">Cartera mixta 60/40</h3>
+                  <span class="tag">Tributación diferida al rescate</span>
+                </div>
+                <div class="fields">
+                  <div class="field full">
+                    <label for="rateMixed">Rentabilidad (%)</label>
+                    <input id="rateMixed" type="number" step="0.01" value="5" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="product-card">
+                <div class="product-head">
+                  <h3 class="product-title">Fondo monetario</h3>
+                  <span class="tag">Tributación diferida al rescate</span>
+                </div>
+                <div class="fields">
+                  <div class="field full">
+                    <label for="rateMoney">Rentabilidad (%)</label>
+                    <input id="rateMoney" type="number" step="0.01" value="2.75" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-secondary" id="resetBtn" type="button">Restablecer</button>
+            <button class="btn btn-primary" id="calculateBtn" type="button">Calcular</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="results-wrap">
+        <section class="summary" id="summary"></section>
+
+        <section class="panel">
+          <div class="panel-body">
+            <div class="tabs">
+              <button class="tab-btn active" data-tab="real">Tabla real neta</button>
+              <button class="tab-btn" data-tab="nominal">Tabla nominal neta</button>
+            </div>
+
+            <div id="tableRealWrap" class="table-wrap"></div>
+            <div id="tableNominalWrap" class="table-wrap" style="display:none;"></div>
+
+            <div class="note" style="margin-top:14px;">
+              <strong>Lectura de resultados:</strong> “Nominal neto” = saldo estimado tras impuestos si liquidaras en ese año.
+              “Real neto” = ese mismo saldo descontando inflación acumulada, es decir, una aproximación a tu poder adquisitivo.
+            </div>
+          </div>
+        </section>
+
+        <section class="note danger" id="warningBox" style="display:none;"></section>
+
+        <section class="footer">
+          Esta herramienta es orientativa. No incorpora comisiones, spreads, cambios regulatorios futuros, variaciones año a año,
+          ni rentabilidades garantizadas. Sirve para comparar escenarios con supuestos homogéneos.
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const defaults = {
+      contributionMode: "annual",
+      contributionAmount: 5000,
+      inflation: 2.5,
+      years: "3,5,10,15,20",
+      taxBrackets: `6000:19
+50000:21
+200000:23
+300000:27
+Infinity:30`,
+      sialpLimit: 5000,
+      sialpMinYears: 5,
+      rateIndex: 7,
+      rateDeposit: 2.5,
+      rateSialp: 2,
+      rateMixed: 5,
+      rateMoney: 2.75,
+    };
+
+    const products = [
+      { key: "index", name: "Fondo indexado", rateField: "rateIndex", taxMode: "deferred" },
+      { key: "deposit", name: "Depósito", rateField: "rateDeposit", taxMode: "annual" },
+      { key: "sialp", name: "SIALP", rateField: "rateSialp", taxMode: "sialp" },
+      { key: "mixed", name: "Cartera mixta 60/40", rateField: "rateMixed", taxMode: "deferred" },
+      { key: "money", name: "Fondo monetario", rateField: "rateMoney", taxMode: "deferred" },
+    ];
+
+    function el(id) {
+      return document.getElementById(id);
+    }
+
+    function formatEUR(value) {
+      return new Intl.NumberFormat("es-ES", {
+        style: "currency",
+        currency: "EUR",
+        maximumFractionDigits: 0,
+      }).format(value);
+    }
+
+    function parseNumber(value, fallback = 0) {
+      const n = Number(String(value).replace(",", "."));
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function parseYears(text) {
+      const years = String(text)
+        .split(",")
+        .map(s => parseInt(s.trim(), 10))
+        .filter(n => Number.isInteger(n) && n > 0);
+
+      const unique = [...new Set(years)].sort((a, b) => a - b);
+      return unique.length ? unique : [3,5,10,15,20];
+    }
+
+    function parseTaxBrackets(text) {
+      const lines = String(text)
+        .split("\n")
+        .map(line => line.trim())
+        .filter(Boolean);
+
+      const brackets = lines.map(line => {
+        const [limitRaw, rateRaw] = line.split(":").map(x => x.trim());
+        const limit = limitRaw.toLowerCase() === "infinity" ? Infinity : parseNumber(limitRaw, NaN);
+        const rate = parseNumber(rateRaw, NaN);
+        return { limit, rate };
+      }).filter(b => Number.isFinite(b.rate) && (Number.isFinite(b.limit) || b.limit === Infinity));
+
+      brackets.sort((a, b) => (a.limit === Infinity ? 1 : b.limit === Infinity ? -1 : a.limit - b.limit));
+
+      if (!brackets.length || brackets[brackets.length - 1].limit !== Infinity) {
+        brackets.push({ limit: Infinity, rate: 30 });
+      }
+
+      return brackets;
+    }
+
+    function calculateProgressiveTax(gain, brackets) {
+      let remaining = Math.max(0, gain);
+      let previousLimit = 0;
+      let tax = 0;
+
+      for (const bracket of brackets) {
+        if (remaining <= 0) break;
+
+        const upper = bracket.limit;
+        const slice = Math.min(remaining, upper - previousLimit);
+        if (slice > 0) {
+          tax += slice * (bracket.rate / 100);
+          remaining -= slice;
+        }
+        previousLimit = upper;
+      }
+      return tax;
+    }
+
+    function monthlyRateFromAnnual(annualPct) {
+      const annual = annualPct / 100;
+      return Math.pow(1 + annual, 1 / 12) - 1;
+    }
+
+    function getInputs() {
+      return {
+        contributionMode: el("contributionMode").value,
+        contributionAmount: parseNumber(el("contributionAmount").value, defaults.contributionAmount),
+        inflation: parseNumber(el("inflation").value, defaults.inflation),
+        years: parseYears(el("years").value),
+        taxBrackets: parseTaxBrackets(el("taxBrackets").value),
+        sialpLimit: parseNumber(el("sialpLimit").value, defaults.sialpLimit),
+        sialpMinYears: parseInt(el("sialpMinYears").value, 10) || defaults.sialpMinYears,
+        rateIndex: parseNumber(el("rateIndex").value, defaults.rateIndex),
+        rateDeposit: parseNumber(el("rateDeposit").value, defaults.rateDeposit),
+        rateSialp: parseNumber(el("rateSialp").value, defaults.rateSialp),
+        rateMixed: parseNumber(el("rateMixed").value, defaults.rateMixed),
+        rateMoney: parseNumber(el("rateMoney").value, defaults.rateMoney),
+      };
+    }
+
+    function getAnnualContributionAmount(contributionMode, contributionAmount) {
+      return contributionMode === "monthly" ? contributionAmount * 12 : contributionAmount;
+    }
+
+    function liquidateBalance(product, balance, contributed, year, params) {
+      const gain = Math.max(0, balance - contributed);
+
+      if (product.taxMode === "annual") {
+        return balance;
+      }
+
+      if (product.taxMode === "deferred") {
+        const tax = calculateProgressiveTax(gain, params.taxBrackets);
+        return balance - tax;
+      }
+
+      if (product.taxMode === "sialp") {
+        const annualContribution = getAnnualContributionAmount(params.contributionMode, params.contributionAmount);
+        const qualifies = year >= params.sialpMinYears && annualContribution <= params.sialpLimit;
+
+        if (qualifies) {
+          return balance;
+        }
+
+        const tax = calculateProgressiveTax(gain, params.taxBrackets);
+        return balance - tax;
+      }
+
+      return balance;
+    }
+
+    function simulateProduct(product, params, maxYear) {
+      const monthlyRate = monthlyRateFromAnnual(params[product.rateField]);
+      const totalMonths = maxYear * 12;
+      const checkpoints = new Set(params.years);
+
+      let balance = 0;
+      let contributed = 0;
+      let yearlyGainForTax = 0;
+
+      const results = [];
+
+      for (let month = 1; month <= totalMonths; month++) {
+        const isStartOfYear = (month - 1) % 12 === 0;
+
+        if (params.contributionMode === "monthly") {
+          balance += params.contributionAmount;
+          contributed += params.contributionAmount;
+        } else if (isStartOfYear) {
+          balance += params.contributionAmount;
+          contributed += params.contributionAmount;
+        }
+
+        const previousBalance = balance;
+        balance *= (1 + monthlyRate);
+        const gainThisMonth = balance - previousBalance;
+
+        if (product.taxMode === "annual") {
+          yearlyGainForTax += gainThisMonth;
+          if (month % 12 === 0) {
+            const tax = calculateProgressiveTax(Math.max(0, yearlyGainForTax), params.taxBrackets);
+            balance -= tax;
+            yearlyGainForTax = 0;
+          }
+        }
+
+        if (month % 12 === 0) {
+          const year = month / 12;
+          if (checkpoints.has(year)) {
+            const nominalNet = liquidateBalance(product, balance, contributed, year, params);
+            const realNet = nominalNet / Math.pow(1 + params.inflation / 100, year);
+
+            results.push({
+              year,
+              contributed,
+              nominalNet,
+              realNet
+            });
+          }
+        }
+      }
+
+      return results;
+    }
+
+    function simulateAll(params) {
+      const maxYear = Math.max(...params.years);
+      const productResults = {};
+
+      for (const product of products) {
+        productResults[product.key] = simulateProduct(product, params, maxYear);
+      }
+
+      const rows = params.years.map((year, index) => {
+        const row = {
+          year,
+          contributed: productResults.index[index]?.contributed || 0
+        };
+
+        for (const product of products) {
+          row[product.key] = productResults[product.key][index];
+        }
+
+        return row;
+      });
+
+      return rows;
+    }
+
+    function bestProductAtLastYear(rows) {
+      const last = rows[rows.length - 1];
+      let best = { name: "", value: -Infinity };
+
+      for (const product of products) {
+        const value = last[product.key]?.realNet ?? -Infinity;
+        if (value > best.value) {
+          best = { name: product.name, value };
+        }
+      }
+      return best;
+    }
+
+    function createTable(rows, mode = "real") {
+      const headers = [
+        "Año",
+        "Aportado",
+        ...products.map(p => p.name)
+      ];
+
+      let html = "<table><thead><tr>";
+      headers.forEach(h => html += `<th>${h}</th>`);
+      html += "</tr></thead><tbody>";
+
+      rows.forEach(row => {
+        html += "<tr>";
+        html += `<td><strong>${row.year}</strong></td>`;
+        html += `<td>${formatEUR(row.contributed)}</td>`;
+
+        for (const product of products) {
+          const data = row[product.key];
+          const value = mode === "real" ? data.realNet : data.nominalNet;
+          html += `<td>${formatEUR(value)}</td>`;
+        }
+
+        html += "</tr>";
+      });
+
+      html += "</tbody></table>";
+      return html;
+    }
+
+    function renderSummary(rows, params) {
+      const last = rows[rows.length - 1];
+      const best = bestProductAtLastYear(rows);
+      const totalContributed = last.contributed;
+
+      const summary = [
+        {
+          kicker: "Total aportado",
+          value: formatEUR(totalContributed),
+          sub: `Hasta el año ${last.year}`
+        },
+        {
+          kicker: "Mejor valor real neto",
+          value: formatEUR(best.value),
+          sub: `${best.name} en el año ${last.year}`
+        },
+        {
+          kicker: "Inflación media usada",
+          value: `${params.inflation.toFixed(2)}%`,
+          sub: "Descuenta poder adquisitivo"
+        }
+      ];
+
+      const html = summary.map(card => `
+        <article class="summary-card">
+          <div class="kicker">${card.kicker}</div>
+          <div class="value">${card.value}</div>
+          <div class="sub">${card.sub}</div>
+        </article>
+      `).join("");
+
+      el("summary").innerHTML = html;
+    }
+
+    function renderWarnings(params) {
+      const annualContribution = getAnnualContributionAmount(params.contributionMode, params.contributionAmount);
+      const warnings = [];
+
+      if (annualContribution > params.sialpLimit) {
+        warnings.push(
+          `La aportación anual equivalente (${formatEUR(annualContribution)}) supera el límite SIALP configurado (${formatEUR(params.sialpLimit)}). En esta simulación, el SIALP pierde la exención fiscal.`
+        );
+      }
+
+      if (params.inflation >= params.rateDeposit) {
+        warnings.push(
+          `La inflación configurada es igual o superior a la rentabilidad del depósito. Es probable que el valor real neto del depósito pierda poder adquisitivo.`
+        );
+      }
+
+      const box = el("warningBox");
+      if (warnings.length) {
+        box.style.display = "block";
+        box.innerHTML = warnings.map(w => `<div>${w}</div>`).join("<br>");
+      } else {
+        box.style.display = "none";
+        box.innerHTML = "";
+      }
+    }
+
+    function calculate() {
+      const params = getInputs();
+      const rows = simulateAll(params);
+
+      el("tableRealWrap").innerHTML = createTable(rows, "real");
+      el("tableNominalWrap").innerHTML = createTable(rows, "nominal");
+
+      renderSummary(rows, params);
+      renderWarnings(params);
+    }
+
+    function resetAll() {
+      Object.entries(defaults).forEach(([key, value]) => {
+        const node = el(key);
+        if (!node) return;
+        node.value = value;
+      });
+      calculate();
+    }
+
+    function initTabs() {
+      const tabButtons = document.querySelectorAll(".tab-btn");
+      tabButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabButtons.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          const tab = btn.dataset.tab;
+          el("tableRealWrap").style.display = tab === "real" ? "block" : "none";
+          el("tableNominalWrap").style.display = tab === "nominal" ? "block" : "none";
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initTabs();
+      el("calculateBtn").addEventListener("click", calculate);
+      el("resetBtn").addEventListener("click", resetAll);
+      calculate();
+    });
+  </script>
+</body>
+</html>
