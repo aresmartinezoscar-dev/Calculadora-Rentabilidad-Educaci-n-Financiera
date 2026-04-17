@@ -770,7 +770,7 @@ Infinity:30</textarea>
             <div class="tabs" id="tabs">
               <button class="tab-btn active" data-tab="real">Valor real neto</button>
               <button class="tab-btn" data-tab="nominal">Valor nominal neto</button>
-              <button class="tab-btn" data-tab="gain">Solo plusvalía neta</button>
+              <button class="tab-btn" data-tab="gain">Ganancia/Pérdida Final</button>
             </div>
 
             <div id="tableRealWrap"    class="table-wrap"></div>
@@ -779,9 +779,9 @@ Infinity:30</textarea>
 
             <div class="note" style="margin-top:14px;" id="tableNote">
               <strong>Cómo leer la tabla:</strong>
-              <br>• <strong>Real neto</strong>: saldo estimado tras impuestos, expresado en euros de hoy (descontada inflación).
-              <br>• <strong>Nominal neto</strong>: saldo estimado tras impuestos en euros corrientes (sin descontar inflación).
-              <br>• <strong>Plusvalía neta</strong>: ganancia neta = nominal neto menos total aportado.
+              <br>• <strong>Real neto</strong>: dinero tras quitar impuestos (teniendo en cuenta la inflación).
+              <br>• <strong>Nominal neto</strong>: dinero tras quitar impuestos en euros (sin tener en cuenta la inflación).
+              <br>• <strong>Ganancia/Pérdida Final</strong>: valor real neto menos total aportado. Mide si has ganado o perdido poder adquisitivo frente a lo que pusiste.
               <br><br>
               El <strong>depósito</strong> tributa año a año: los impuestos se descuentan del saldo cada ejercicio fiscal y no se reinvierten.
               El <strong>SIALP</strong> está exento si nunca se supera el límite anual y se mantiene ≥ 5 años; si no, tributa al rescate como el resto.
@@ -1147,7 +1147,7 @@ Infinity:30</textarea>
         const d = row[prodKey];
         if (mode === "real")    return d.realNet;
         if (mode === "nominal") return d.nominalNet;
-        if (mode === "gain")    return d.nominalNet - row.contributed;
+        if (mode === "gain")    return d.realNet - row.contributed;
         return 0;
       };
 
